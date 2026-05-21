@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Mortgage Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        input[type=range] { accent-color: #4f46e5; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white rounded-3xl shadow-xl w-full max-w-4xl p-6 md:p-10">
+        <div class="text-center mb-10">
+            <h1 class="text-3xl font-bold text-gray-900">Mortgage Calculator</h1>
+            <p class="text-gray-500 mt-2">Estimate your monthly mortgage payments in seconds.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div class="space-y-8">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Loan Amount ($)</label>
+                    <input type="number" id="principal" value="300000" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" oninput="calculate()">
+                    <input type="range" id="principalRange" min="50000" max="2000000" step="5000" value="300000" class="w-full mt-2" oninput="syncInputs('principal', this.value)">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Interest Rate (%)</label>
+                    <input type="number" id="interest" value="5.5" step="0.1" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" oninput="calculate()">
+                    <input type="range" id="interestRange" min="1" max="15" step="0.1" value="5.5" class="w-full mt-2" oninput="syncInputs('interest', this.value)">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Loan Term (Years)</label>
+                    <select id="term" class="w-full p-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none" onchange="calculate()">
+                        <option value="15">15 Years</option>
+                        <option value="20">20 Years</option>
+                        <option value="30" selected>30 Years</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bg-indigo-600 rounded-3xl p-8 text-white flex flex-col justify-center">
+                <h2 class="text-indigo-100 font-medium mb-4">Estimated Monthly Payment</h2>
+                <div id="monthlyPayment" class="text-5xl font-bold mb-8">$0.00</div>
+                
+                <div class="grid grid-cols-2 gap-4 border-t border-indigo-500 pt-6">
+                    <div>
+                        <p class="text-indigo-200 text-sm">Total Principal</p>
+                        <p id="totalPrincipal" class="text-xl font-semibold">$0.00</p>
+                    </div>
+                    <div>
+                        <p class="text-indigo-200 text-sm">Total Interest</p>
+                        <p id="totalInterest" class="text-xl font-semibold">$0.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function syncInputs(id, val) {
+            document.getElementById(id).value = val;
+            calculate();
+        }
+
+        function calculate() {
+            const principal = parseFloat(document.getElementById('principal').value);
+            const interestRate = parseFloat(document.getElementById('interest').value) / 100 / 12;
+            const termMonths = parseFloat(document.getElementById('term').value) * 12;
+            
+            const monthlyPaymentDisplay = document.getElementById('monthlyPayment');
+            const totalPrincipalDisplay = document.getElementById('totalPrincipal');
+            const totalInterestDisplay = document.getElementById('totalInterest');
+
+            if (!principal || !interestRate || !termMonths) {
+                monthlyPaymentDisplay.innerText = "$0.00";
+                return;
+            }
+
+            let monthlyPayment;
+            if (interestRate === 0) {
+                monthlyPayment = principal / termMonths;
+            } else {
+                monthlyPayment = (principal * interestRate * Math.pow(1 + interestRate, termMonths)) / (Math.pow(1 + interestRate, termMonths) - 1);
+            }
+
+            const totalRepayment = monthlyPayment * termMonths;
+            const totalInterest = totalRepayment - principal;
+
+            const formatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+            
+            monthlyPaymentDisplay.innerText = formatter.format(monthlyPayment);
+            totalPrincipalDisplay.innerText = formatter.format(principal);
+            totalInterestDisplay.innerText = formatter.format(totalInterest);
+        }
+
+        // Run on load
+        window.onload = calculate;
+    </script>
+</body>
+</html>
